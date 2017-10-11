@@ -1,8 +1,12 @@
 package org.bookshare.recommender.rec;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
 import org.apache.mahout.cf.taste.impl.neighborhood.ThresholdUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
@@ -20,6 +24,12 @@ import org.springframework.stereotype.Component;
 public class SampleRecommender implements CommandLineRunner {
     @Value("${user.interactions.data}")
     private String modelDataFile;
+    
+    private Log logger;
+    
+    public SampleRecommender() {
+        logger = LogFactory.getLog(this.getClass());
+    }
 
     @Override
     public void run(final String... arg0)
@@ -38,17 +48,30 @@ public class SampleRecommender implements CommandLineRunner {
             
             // 3. Rank the similarities to find the top user matches for a given user
             final UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.1, similarity, model);
+            logSimilarUsers(neighborhood, userId);
             
             // 4. Recommend items by looking at books of users with similar tastes, using a weighted score
             final UserBasedRecommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
             
             final List<RecommendedItem> recommendations = recommender.recommend(userId, recommendationCount);
-            for (final RecommendedItem item : recommendations) {
-                System.out.println(item);
-            }
+            logRecommendations(recommendations);
         } else {
-            System.out.println("Usage: java -jar path/to/jarfile.jar <user ID> <number of recommendations>");
+            logger.info("Usage: java -jar path/to/jarfile.jar <user ID> <number of recommendations>");
         }
     }
 
+    private void logRecommendations(final List<RecommendedItem> recommendations) {
+        for (final RecommendedItem item : recommendations) {
+            logger.info("Recommendation: https://public.qa.bookshare.org/browse/book/" + item.getItemID());
+        }
+    }
+
+    private void logSimilarUsers(final UserNeighborhood neighborhood, final Integer userId) throws TasteException {
+        final long[] similarUserIds = neighborhood.getUserNeighborhood(userId);
+        logger.info("Number of similar users: " + similarUserIds.length);
+        logger.info("Top 10 similars");
+        Arrays.stream(similarUserIds)
+            .limit(10)
+            .forEach(s -> logger.info("Similar user: https://admin.qa.bookshare.org/viewUser?id=" + s));
+    }
 }
