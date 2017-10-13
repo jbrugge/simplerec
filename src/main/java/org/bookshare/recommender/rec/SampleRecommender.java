@@ -54,13 +54,14 @@ public class SampleRecommender implements CommandLineRunner {
             final UserBasedRecommender recommender = new GenericUserBasedRecommender(model, neighborhood, similarity);
             
             final List<RecommendedItem> recommendations = recommender.recommend(userId, recommendationCount);
-            logRecommendations(recommendations);
+            logRecommendations(recommendations, userId);
         } else {
             logger.info("Usage: java -jar path/to/jarfile.jar <user ID> <number of recommendations>");
         }
     }
 
-    private void logRecommendations(final List<RecommendedItem> recommendations) {
+    private void logRecommendations(final List<RecommendedItem> recommendations, final Integer userId) {
+        logger.info("Top recommendations for " + userId);
         for (final RecommendedItem item : recommendations) {
             logger.info("Recommendation: https://public.qa.bookshare.org/browse/book/" + item.getItemID());
         }
@@ -69,7 +70,7 @@ public class SampleRecommender implements CommandLineRunner {
     private void logSimilarUsers(final UserNeighborhood neighborhood, final Integer userId) throws TasteException {
         final long[] similarUserIds = neighborhood.getUserNeighborhood(userId);
         logger.info("Number of similar users: " + similarUserIds.length);
-        logger.info("Top 10 similars");
+        logger.info("Top 10 similar users");
         Arrays.stream(similarUserIds)
             .limit(10)
             .forEach(s -> logger.info("Similar user: https://admin.qa.bookshare.org/viewUser?id=" + s));
