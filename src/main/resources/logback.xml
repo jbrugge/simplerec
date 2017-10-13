@@ -1,0 +1,16 @@
+<configuration debug="false">
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
+			by default -->
+		<encoder>
+			<!-- Bookshare Legacy Log4J pattern -->
+			<!-- <pattern>[%d{DATE}] %-5p %c{3} [%x] - %m%n</pattern> -->
+			<pattern>[%d{"dd MMM yyyy HH:mm:ss,SSS z"}] %-5p %c{0} [%X{url}] - %m%n</pattern>
+		</encoder>
+	</appender>
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>
